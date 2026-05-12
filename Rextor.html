@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rextor</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Базовые стили */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body{
+    background: linear-gradient(135deg, #000428, #004e92, #001a3d);
+    min-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+/* ЭКРАН ЗАГРУЗКИ */
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000428;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.8s ease, visibility 0.8s;
+}
+
+.loader-logo {
+    font-size: 60px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 20px #00d2ff;
+    margin-bottom: 30px;
+    letter-spacing: 5px;
+}
+
+.progress-container {
+    width: 300px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #0072ff, #00d2ff);
+    box-shadow: 0 0 15px #00d2ff;
+    transition: width 0.1s linear;
+}
+
+.percent-text {
+    margin-top: 15px;
+    font-size: 18px;
+    color: #00d2ff;
+}
+
+.hide-loader {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Звезды */
+.stars{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.star{
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: move 10s linear infinite;
+    opacity: .5;
+}
+
+@keyframes move{
+    0%{transform: translateY(100vh);}
+    100%{transform: translateY(-100vh);}
+}
+
+/* Текст внизу */
+.bottom-info {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    font-size: 14px;
+    color: #00d2ff;
+    opacity: 0.8;
+    z-index: 10;
+    text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+}
+
+/* Анимации появления */
+.main-fade-in { 
+    display: flex !important;
+    animation: mainFadeIn 1s ease forwards; 
+}
+
+@keyframes mainFadeIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.fade-in { animation: fadeIn 0.4s ease forwards; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -48%) scale(0.95); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Основной интерфейс */
+.wrapper {
+    display: none;
+    flex-direction: row;
+    gap: 40px;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+.container { text-align: center; }
+
+.logo {
+    font-size: 72px;
+    font-weight: bold;
+    text-shadow: 0 0 25px #00d2ff, 0 0 50px #0072ff;
+    margin-bottom: 10px;
+}
+
+.button {
+    width: 320px;
+    padding: 18px;
+    border-radius: 20px;
+    text-decoration: none;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    background: rgba(0, 70, 180, 0.3);
+    border: 2px solid #00d2ff;
+    backdrop-filter: blur(10px);
+    transition: 0.3s;
+    box-shadow: 0 0 15px rgba(0, 114, 255, 0.4);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.button:hover {
+    transform: scale(1.05);
+    background: rgba(0, 114, 255, 0.2);
+    box-shadow: 0 0 25px #00d2ff;
+}
+
+/* Цвета кнопок соцсетей */
+.btn-yt { border-color: #ff4b4b; }
+.btn-tg { border-color: #0088cc; }
+.btn-twitch { border-color: #9146ff; }
+.btn-da { border-color: #ff9d00; }
+
+.description-box {
+    width: 340px;
+    padding: 25px;
+    border-radius: 20px;
+    background: rgba(0, 30, 80, 0.5);
+    border: 2px solid #0072ff;
+    backdrop-filter: blur(10px);
+    font-size: 18px;
+}
+
+.clock {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    font-size: 20px;
+    z-index: 10;
+}
+
+/* Модальные окна */
+.overlay-box {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 550px;
+    max-width: 95%;
+    padding: 30px;
+    background: rgba(0, 10, 40, 0.95);
+    border: 2px solid #00d2ff;
+    border-radius: 30px;
+    z-index: 1000;
+    backdrop-filter: blur(15px);
+}
+
+.pc-info p {
+    margin-bottom: 10px;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.pc-info b {
+    color: #00d2ff;
+}
+
+/* Стили индикатора интернета */
+.internet-stats {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.signal-bars {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.bar {
+    width: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 1px;
+    transition: 0.3s;
+}
+
+.bar1 { height: 6px; }
+.bar2 { height: 10px; }
+.bar3 { height: 14px; }
+.bar4 { height: 20px; }
+
+/* Состояния сигнала */
+.good .bar { background: #00ff88; box-shadow: 0 0 5px #00ff88; }
+.bad .bar1, .bad .bar2 { background: #ffcc00; }
+.bad .bar3, .bad .bar4 { background: rgba(255, 255, 255, 0.2); }
+.offline .bar { background: #ff4b4b; }
+
+.back-btn {
+    display: block;
+    margin: 15px auto 0;
+    padding: 12px;
+    width: 100%;
+    max-width: 320px;
+    border-radius: 15px;
+    background: rgba(255, 50, 50, 0.15);
+    border: 2px solid #ff4b4b;
+    color: white;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 998;
+}
+</style>
+</head>
+
+<body>
+
+<div class="bottom-info">
+    Это официальный сайт Rextor, а остальные фейки
+</div>
+
+<div id="preloader">
+    <div class="loader-logo">Loading</div>
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="percent-text" id="percent-text">0%</div>
+</div>
+
+<div class="stars" id="stars"></div>
+<div class="clock" id="clock">00:00:00</div>
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+<div class="wrapper" id="main-ui">
+    <div class="container">
+        <div class="logo">Rextor</div>
+        <div class="about">Добро пожаловать</div>
+        <div class="menu">
+            <div class="button" onclick="openSection('socialPopup')"><i class="fa-solid fa-share-nodes"></i> Соцсети</div>
+            <div class="button" onclick="openSection('pcbox')"><i class="fa-solid fa-desktop"></i> Мой ПК</div>
+            <div class="button" onclick="openSection('statsBox')"><i class="fa-solid fa-chart-line"></i> Статистика</div>
+            <div class="button" onclick="openSection('creditsBox')"><i class="fa-solid fa-code"></i> Credits</div>
+        </div>
+    </div>
+    <div class="description-box">
+        <b>Rextor</b> — персональный сайт.<br><br>Выберите нужный раздел в меню слева.
+    </div>
+</div>
+
+<div class="overlay-box" id="socialPopup">
+    <h2 style="text-align:center; margin-bottom:20px;">Мои Соцсети</h2>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <a class="button btn-yt" href="https://www.youtube.com/@%D0%9A%D0%BE%D1%80%D0%BE%D1%87%D0%B5%D0%A0%D0%B5%D0%BA%D1%81%D1%82%D0%BE%D1%80" target="_blank"><i class="fa-brands fa-youtube"></i> YouTube</a>
+        <a class="button btn-tg" href="https://t.me/Rextormo" target="_blank"><i class="fa-brands fa-telegram"></i> Telegram</a>
+        <a class="button btn-twitch" href="https://www.twitch.tv/barkhatso2" target="_blank"><i class="fa-brands fa-twitch"></i> Twitch</a>
+        <a class="button btn-da" href="https://www.donationalerts.com/r/barkhatso2" target="_blank"><i class="fa-solid fa-heart"></i> DonationAlerts</a>
+        <div class="back-btn" onclick="closeAll()">⬅ Назад</div>
+    </div>
+</div>
+
+<div class="overlay-box" id="statsBox">
+    <h2 style="text-align:center; margin-bottom:20px; color:#00ff88;">Статистика</h2>
+    <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:15px;">
+        <p><i class="fa-solid fa-check" style="color:#00ff88;"></i> Интерфейс: 100%</p>
+        <p><i class="fa-solid fa-spinner fa-spin" style="color:#00d2ff;"></i> Контент: В процессе</p>
+        
+        <div class="internet-stats">
+            <p style="margin-bottom: 10px;"><b>Интернет-соединение:</b></p>
+            <div style="display: flex; align-items: center;">
+                <div class="signal-bars" id="signal-bars">
+                    <div class="bar bar1"></div>
+                    <div class="bar bar2"></div>
+                    <div class="bar bar3"></div>
+                    <div class="bar bar4"></div>
+                </div>
+                <span id="net-status" style="font-weight: bold;">Определяем...</span>
+            </div>
+            <p id="net-speed" style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 5px;">Тип сети: --</p>
+        </div>
+    </div>
+    <div class="back-btn" onclick="closeAll()">⬅ Назад</div>
+</div>
+
+<div class="overlay-box" id="pcbox">
+    <h2 style="text-align:center; margin-bottom:20px;">Характеристики ПК</h2>
+    <div class="pc-info" style="background:rgba(255,255,255,0.05); padding:20px; border-radius:15px;">
+        <p><b>Имя устройства:</b> HOME-PC</p>
+        <p><b>Процессор:</b> Intel(R) Xeon(R) CPU E5-2650 v2 @ 2.60GHz (2.60 GHz)</p>
+        <p><b>Оперативная память:</b> 32,0 ГБ</p>
+        <p><b>Тип системы:</b> 64-разрядная ОС, процессор x64</p>
+        <p style="font-size: 13px; color: rgba(255,255,255,0.5); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+            Перо и сенсорный ввод недоступны для этого монитора
+        </p>
+    </div>
+    <div class="back-btn" onclick="closeAll()">⬅ Назад</div>
+</div>
+
+<div class="overlay-box" id="creditsBox">
+    <h2 style="text-align:center; margin-bottom:20px;">Credits</h2>
+    <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:15px; font-size: 15px;">
+        <p><b>Разработка:</b> Rextor</p>
+        <hr style="margin: 10px 0; border: 0.1px solid rgba(255,255,255,0.1);">
+        <p><b>Проверка и оценка:</b></p>
+        <ul style="margin-left: 20px; color: #00d2ff;">
+            <li>NiceGames</li>
+            <li>spbDeputat</li>
+        </ul>
+        <br>
+        <p><b>Тестирование сайта:</b></p>
+        <ul style="margin-left: 20px; color: #00d2ff;">
+            <li>wondoly_52</li>
+        </ul>
+    </div>
+    <div class="back-btn" onclick="closeAll()">⬅ Назад</div>
+</div>
+
+<script>
+// ЛОГИКА ИНТЕРНЕТА
+function updateInternetStatus() {
+    const statusText = document.getElementById('net-status');
+    const speedText = document.getElementById('net-speed');
+    const bars = document.getElementById('signal-bars');
+    
+    if (navigator.onLine) {
+        const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        
+        if (conn) {
+            const type = conn.effectiveType; // '4g', '3g', '2g', 'slow-2g'
+            speedText.innerText = `Тип сети: ${type.toUpperCase()} (скорость ок. ${conn.downlink} Mbps)`;
+            
+            if (type === '4g') {
+                statusText.innerText = 'Отлично';
+                statusText.style.color = '#00ff88';
+                bars.className = 'signal-bars good';
+            } else if (type === '3g') {
+                statusText.innerText = 'Нормально';
+                statusText.style.color = '#ffcc00';
+                bars.className = 'signal-bars bad';
+            } else {
+                statusText.innerText = 'Плохо';
+                statusText.style.color = '#ff4b4b';
+                bars.className = 'signal-bars offline';
+            }
+        } else {
+            statusText.innerText = 'Онлайн';
+            statusText.style.color = '#00ff88';
+            bars.className = 'signal-bars good';
+        }
+    } else {
+        statusText.innerText = 'Нет сети';
+        statusText.style.color = '#ff4b4b';
+        speedText.innerText = 'Соединение потеряно';
+        bars.className = 'signal-bars offline';
+    }
+}
+
+// Запуск проверки
+window.addEventListener('online', updateInternetStatus);
+window.addEventListener('offline', updateInternetStatus);
+setInterval(updateInternetStatus, 3000); // Обновлять каждые 3 сек
+updateInternetStatus();
+
+// ЛОГИКА ЗАГРУЗКИ
+function startLoader() {
+    const progressBar = document.getElementById('progress-bar');
+    const percentText = document.getElementById('percent-text');
+    const preloader = document.getElementById('preloader');
+    const mainUI = document.getElementById('main-ui');
+    
+    let width = 0;
+    const interval = setInterval(() => {
+        if (width >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+                preloader.classList.add('hide-loader');
+                mainUI.classList.add('main-fade-in');
+            }, 500);
+        } else {
+            width += Math.floor(Math.random() * 4) + 1;
+            if (width > 100) width = 100;
+            progressBar.style.width = width + '%';
+            percentText.innerText = width + '%';
+        }
+    }, 40);
+}
+
+window.addEventListener('load', startLoader);
+
+for(let i=0; i<60; i++){
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random()*100+'%';
+    star.style.top = Math.random()*100+'%';
+    star.style.animationDuration = (5 + Math.random()*10)+'s';
+    document.getElementById('stars').appendChild(star);
+}
+
+setInterval(() => {
+    document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+}, 1000);
+
+function openSection(id) {
+    document.getElementById('main-ui').style.display = 'none';
+    document.getElementById('overlay').style.display = 'block';
+    const section = document.getElementById(id);
+    section.style.display = 'block';
+    section.classList.add('fade-in');
+}
+
+function closeAll() {
+    document.querySelectorAll('.overlay-box').forEach(box => {
+        box.style.display = 'none';
+        box.classList.remove('fade-in');
+    });
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('main-ui').style.display = 'flex';
+}
+</script>
+
+</body>
+</html>
